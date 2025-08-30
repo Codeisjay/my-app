@@ -1,7 +1,7 @@
 [build]
 builder = "NIXPACKS"
+buildCommand = "npm install"
+startCommand = "npm start"
 
 [deploy]
-# Use backend as the service
-startCommand = "npm start"
-root = "backend"
+rootDirectory = "backend"
