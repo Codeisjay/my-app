@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 
 dotenv.config();
 const app = express();
@@ -20,14 +21,18 @@ app.use(
   })
 );
 
-// MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB Error:", err));
+// MongoDB connection (won't crash if missing)
+if (process.env.MONGO_URI) {
+  mongoose
+    .connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    .then(() => console.log("✅ MongoDB Connected"))
+    .catch((err) => console.error("❌ MongoDB Error:", err));
+} else {
+  console.warn("⚠️ No MONGO_URI found, backend running without database");
+}
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -62,7 +67,7 @@ app.post("/login", async (req, res) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "secret", {
     expiresIn: "1h",
   });
 
@@ -74,7 +79,7 @@ const authMiddleware = (req, res, next) => {
   const token = req.headers["authorization"]?.split(" ")[1]; // Bearer <token>
   if (!token) return res.status(403).json({ error: "No token" });
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET || "secret", (err, decoded) => {
     if (err) return res.status(401).json({ error: "Invalid token" });
     req.user = decoded;
     next();
@@ -89,21 +94,23 @@ app.get("/protected", authMiddleware, (req, res) => {
   });
 });
 
-// Health check route (useful for Railway)
+// Health check route (always works)
 app.get("/api/health", (req, res) => {
   res.send("🚀 Backend is running!");
 });
 
-// -------- Serve Frontend (after build) ----------
+// -------- Serve Frontend (after build, if exists) ----------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const frontendPath = path.join(__dirname, "public");
 
-app.use(express.static(frontendPath));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
-// -----------------------------------------------
+if (fs.existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
+}
+// -----------------------------------------------------------
 
 // Start server
 const PORT = process.env.PORT || 5000;
