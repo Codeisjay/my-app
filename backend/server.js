@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 const app = express();
@@ -88,9 +90,20 @@ app.get("/protected", authMiddleware, (req, res) => {
 });
 
 // Health check route (useful for Railway)
-app.get("/", (req, res) => {
+app.get("/api/health", (req, res) => {
   res.send("🚀 Backend is running!");
 });
+
+// -------- Serve Frontend (after build) ----------
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendPath = path.join(__dirname, "public");
+
+app.use(express.static(frontendPath));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
+});
+// -----------------------------------------------
 
 // Start server
 const PORT = process.env.PORT || 5000;
