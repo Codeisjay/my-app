@@ -12,7 +12,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "serve": "serve -s build"
+    "serve": "npx serve -s build"
   },
   "browserslist": {
     "production": [
