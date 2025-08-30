@@ -7,9 +7,14 @@ cmds = ["cd backend && npm install"]
 
 # Install frontend dependencies and build production files
 [phases.frontend]
-cmds = ["cd frontend && npm install && npm run build"]
+cmds = [
+  "cd frontend && npm install",
+  "cd frontend && npm run build",
+  "mkdir -p backend/public",
+  "cp -r frontend/dist/* backend/public/ || cp -r frontend/build/* backend/public/"
+]
 
 [deploy]
-# Start backend server (it should serve frontend build if needed)
-startCommand = "cd frontend && npm start"
+# Start backend server
+startCommand = "cd backend && npm start"
 restartPolicyType = "ON_FAILURE"
