@@ -1,0 +1,13 @@
+[build]
+builder = "NIXPACKS"
+
+[phases.setup]
+nixPkgs = ["nodejs-18_x"]
+
+[services.backend]
+start = "cd backend && npm install && npm start"
+envs = { NODE_ENV = "production" }
+
+[services.frontend]
+start = "cd frontend && npm install && npm run build && npx serve -s build -l 3000"
+envs = { NODE_ENV = "production", PORT = "3000" }
