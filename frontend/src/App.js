@@ -7,7 +7,8 @@ function App() {
   const [token, setToken] = useState("");
   const [message, setMessage] = useState("");
 
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  // 👇 Use your Railway backend
+  const API_URL = "https://my-app-production-a9e2.up.railway.app";
 
   const signup = async () => {
     try {
@@ -67,3 +68,4 @@ function App() {
 }
 
 export default App;
+
