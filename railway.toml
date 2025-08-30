@@ -1,6 +1,15 @@
 [build]
 builder = "NIXPACKS"
 
+# Install backend dependencies
+[phases.backend]
+cmds = ["cd backend && npm install"]
+
+# Install frontend dependencies and build production files
+[phases.frontend]
+cmds = ["cd frontend && npm install && npm run build"]
+
 [deploy]
-rootDirectory = "backend"
-startCommand = "npm start"
+# Start backend server (it should serve frontend build if needed)
+startCommand = "cd backend && npm start"
+restartPolicyType = "ON_FAILURE"
